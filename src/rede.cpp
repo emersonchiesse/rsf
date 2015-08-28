@@ -123,7 +123,7 @@ enum
 void MyFrame::OnPaint(wxPaintEvent& event) {
     wxPaintDC dc(this);
 
-    cout << "app.onpaint\n";
+//    cout << "app.onpaint\n";
 
     wxSize size = GetClientSize();
     std::vector<Nodo> nodos = grafo.getNodos();
@@ -133,6 +133,8 @@ void MyFrame::OnPaint(wxPaintEvent& event) {
     	int x = nodos[i].getX();
     	int y = nodos[i].getY();
     	string id = nodos[i].getId();
+
+    	// escolhe cor, se estiver selecionado
     	if (std::find(nodosSelecionados.begin(),
     					nodosSelecionados.end(),
 						id) != nodosSelecionados.end() )
@@ -146,16 +148,19 @@ void MyFrame::OnPaint(wxPaintEvent& event) {
 			dc.SetPen( wxPen( wxColor(255,0,0), 1 ) );
 		}
 
+    	// desenha nodos
     	dc.DrawCircle(x*MULTIPLIER, size.y-y*MULTIPLIER, 5);
     	dc.DrawText(wxString::FromUTF8(id.c_str()),
-    			x*MULTIPLIER, size.y-y*MULTIPLIER);
+    			x*MULTIPLIER+5, size.y-y*MULTIPLIER+5);
 
+    	// desenha vertices
     	std::vector<Vertice> vizinhos = nodos[i].getVizinhos();
     	for (int j=0; j<vizinhos.size(); j++)
     	{
+    		//cout << "vizinho " << v << "\n";
+
     		string v=vizinhos[j].getId();
     		int peso=vizinhos[j].getCusto();
-    		cout << "vizinho " << v << "\n";
     		int ind = grafo.procura(v);
     		int x1 = nodos[ind].getX();
     		int y1 = nodos[ind].getY();
@@ -242,7 +247,7 @@ MyFrame::MyFrame(const wxString& title)
 
     toolsMenu->Append(Minimal_restart, _T("&Restart\tAlt-R"), _T(""));
     toolsMenu->Append(Minimal_random, _T("R&andom\tAlt-A"), _T(""));
-    toolsMenu->Append(Minimal_FileDikstra, _T("&Djisktra...\tF2"), _T("Calc Djistra"));
+    toolsMenu->Append(Minimal_FileDikstra, _T("&Dijkstra...\tF2"), _T("Calc Dijkstra"));
 
 
     // now append the freshly created menu to the menu bar...
@@ -313,17 +318,17 @@ void MyFrame::OnDijkstra(wxCommandEvent& event) {
 		grafo.caminhomaiscurto(nodosSelecionados[0],
 				nodosSelecionados[1]);
 
-		wxMessageBox(wxString::Format(
-		                    _T("Welcome to %s!\n")
-		                    _T("\n")
-		                    _T("\n")
-		                    _T("running under %s."),
-		                    wxVERSION_STRING,
-		                    wxGetOsDescription().c_str()
-		                 ),
-		                 _T("About Redes Sem Fio App"),
-		                 wxOK | wxICON_INFORMATION,
-		                 this);
+//		wxMessageBox(wxString::Format(
+//		                    _T("Welcome to %s!\n")
+//		                    _T("\n")
+//		                    _T("\n")
+//		                    _T("running under %s."),
+//		                    wxVERSION_STRING,
+//		                    wxGetOsDescription().c_str()
+//		                 ),
+//		                 _T("About Redes Sem Fio App"),
+//		                 wxOK | wxICON_INFORMATION,
+//		                 this);
 	}
 	else
 		SetStatusText("selecione 2 nodos");

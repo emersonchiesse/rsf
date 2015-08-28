@@ -8,15 +8,20 @@
 #ifndef GRAFO_H_
 #define GRAFO_H_
 
-#include <string>
 #include "Nodo.h"
 
+#include <string>
+#include <pthread.h>
+
 using namespace std;
+
+#define NUM_THREADS 50
 
 class Grafo {
 private:
 	std::vector<Nodo> nodos;
 	int raio;
+	pthread_t threads[NUM_THREADS];
 
 public:
 	Grafo();

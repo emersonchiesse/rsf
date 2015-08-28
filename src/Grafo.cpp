@@ -22,6 +22,7 @@ Grafo::Grafo() {
 }
 
 Grafo::~Grafo() {
+	//pthread_exit(NULL);
 }
 
 vector<string> tokenizeString(const string& str, const string& delimiters)
@@ -93,8 +94,12 @@ void Grafo::load(string arq) {
 	      }
 
 	    }
-	    cout << "\nfinished\n";
 	    ifs.close();
+
+	    cout << "Nodos: ";
+	    for (int i = 0; i < nodos.size(); i++)
+	    	cout << nodos[i].getId() << " ";
+	    cout << endl;
 	  }
 	  else cout << "Unable to open file";
 }
@@ -104,6 +109,7 @@ void Grafo::loadcoords(string arq) {
 	ifstream ifs (n.c_str());
 	string line;
 
+	cout << "\ncarregando coordenadas...\n";
 	 if (ifs.is_open())
 	  {
 	    while ( getline (ifs,line) )
@@ -114,7 +120,7 @@ void Grafo::loadcoords(string arq) {
 	    	  continue;
 
 	      vector<string> v = tokenizeString (line, " ");
-	      cout << "id: " <<  v[0] << "\n";
+	      //cout << "id: " <<  v[0] << "\n";
 
 	      int a = procura(v[0]);
 	      if (a >= 0)
@@ -208,22 +214,25 @@ void Grafo::caminhomaiscurto(string n1, string n2) {
 	vector<int> D;
 	int nnodos = nodos.size();
 
-	cout << "nodo[0]: " << nodos[0].getId() << "\n";
+	cout << "iniciando dijkstra: " << endl;
+
+	int iu = procura(n1);
+	string u = nodos[iu].getId();
+
+	cout << "nodo inicial: " << u << endl;
 
 	// N = {u}
-	string u = nodos[0].getId();
 	N.push_back(u);
 	D.push_back(0);
 
 	// inicializacao
-	for (int i = 1; i < nnodos; i++)
+	for (int i = iu+1; i < nnodos; i++)
 	{
 		cout << "nodo[i]: " << nodos[i].getId() << " ";
-		D.push_back(nodos[0].getCustoVizinho(nodos[i].getId()));
-
-		cout << "custo: " << D[i] << "\n";
+		D.push_back(nodos[iu].getCustoVizinho(nodos[i].getId()));
+		cout << "custo: " << D[i-iu] << "\n";
 	}
-	cout << "\n";
+	cout << endl;
 
 	string w;
 	int ind;
@@ -236,15 +245,16 @@ void Grafo::caminhomaiscurto(string n1, string n2) {
 		for (int v = 0; v < D.size() ; v++)
 		{
 			// verifica se v nodo nao esta em N
-			if (find (N.begin(), N.end(), nodos[v].getId() ) == N.end())
+			string id = nodos[iu+v].getId();
+			if (find (N.begin(), N.end(), id ) == N.end())
 			{
 				// procura menor D(v)
 				if (D[v] > 0 && D[v] < Dw)
 				{
 					Dw = D[v];
-					cout << "w: " << nodos[v].getId() <<
+					cout << "w: " << id <<
 							" D(w): " << Dw << "\n";
-					ind = v;
+					ind = iu+v;
 				}
 			}
 		}
@@ -280,21 +290,23 @@ void Grafo::caminhomaiscurto(string n1, string n2) {
 			if (find (N.begin(), N.end(), v ) == N.end())
 			{
 				// atualiza D(v) se v adjacente a w e nao em N'
-				D[indv] = min (D[indv], Dw + vizinhosW[i].getCusto()) ;
-				cout << "D(v)(" << v << ")= " << D[indv] << "\n";
+				D[indv-iu] = min (D[indv-iu], Dw + vizinhosW[i].getCusto()) ;
+				cout << "D(v)(" << v << ")= " << D[indv-iu] << "\n";
 			}
 		}
 
 		cout << "D: ";
-		for (int i = 0; i < nnodos; i++)
+		//for (int i = 0; i < nnodos; i++)
+		for (int i = 0; i < D.size(); i++)
 			cout << D[i] << " ";
 		cout << "\n";
 
 		// verifica se todos os nodos estao em N
 		stop = true;
-		for (int i = 0; i < nnodos; i++)
+//		for (int i = 0; i < nnodos; i++)
+		for (int j = iu; j < nnodos; j++)
 		{
-			string id = nodos[i].getId();
+			string id = nodos[j].getId();
 			if (find (N.begin(), N.end(), id ) == N.end())
 			{
 				stop = false;
@@ -308,16 +320,25 @@ void Grafo::caminhomaiscurto(string n1, string n2) {
 	cout << "\nTabela de custos: \n";
 
 	cout << "N: ";
-	for (int i = 0; i < nnodos; i++)
+	for (int i = iu; i < nnodos; i++)
 		cout << nodos[i].getId() << " ";
 	cout << "\n";
 
 	cout << "D: ";
-	for (int i = 0; i < nnodos; i++)
+	for (int i = 0; i < D.size(); i++)
 		cout << D[i] << " ";
 	cout << "\n";
 
 }
+
+void *PrintHello(void *threadid)
+{
+   long tid;
+   tid = (long)threadid;
+   cout << "running thread ID " << tid << endl;
+   pthread_exit(NULL);
+}
+
 
 #define PI 3.14159265
 void Grafo::criaRandom(int count) {
@@ -340,26 +361,39 @@ void Grafo::criaRandom(int count) {
 		// ajusta coordenadas de tela, desloca para cima e direita
 		Nodo n (s, x+2*raio, y+2*raio);
 		this->addNodo(n);
+
+		int rc = pthread_create(&threads[i], NULL,
+		                          PrintHello, (void *)i);
+	  if (rc)
+		 cout << "Error:unable to create thread," << rc << endl;
+
+	  cout << "adicionado nodo: " << s << endl;
 	}
 
-	// cria vertices
+	// cria vertices para todos os nodos
 	for (int i = 0; i < count; i++)
 	{
+		cout << "adiciona vertice ao nodo: " << i << endl;
+
+		// define quantos vertices para o nodo i
 		int numv = rand() % count;
 		for (int j = 0; j < numv; j++)
 		{
+			// define vertice destino
 			int dest = rand() % count;
 
-			// ignora se o destino eh o mesmo nodo
-			if (dest == j)
+			// ignora se o destino eh o mesmo nodo, ou anterior
+			if (dest <= i)
 				continue;
 
-			char Result[16]; // string which will contain the number
+			char Result[16];
 			sprintf ( Result, "%d", dest );
 			string s = string(Result);
 
 			Vertice v (s, 1);
 			nodos[i].addVizinho(v);
+
+			cout << "destino: " << s << endl;
 		}
 	}
 
