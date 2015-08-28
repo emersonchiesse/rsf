@@ -328,23 +328,39 @@ void Grafo::criaRandom(int count) {
 	// cria nodos
 	for (int i = 0; i < count; i++)
 	{
+		// calcula coordenadas
 		x = raio*cos(ang*i*PI/180);
 		y = raio*sin(ang*i*PI/180);
 
+		// adiciona nodo
 		char Result[16]; // string which will contain the number
 		sprintf ( Result, "%d", i );
 		string s = string(Result);
-		 Nodo n (s, x+2*raio, y+2*raio);
-		 this->addNodo(n);
 
-//		n.setCoord(x+2*raio, y+2*raio);
+		// ajusta coordenadas de tela, desloca para cima e direita
+		Nodo n (s, x+2*raio, y+2*raio);
+		this->addNodo(n);
 	}
 
 	// cria vertices
 	for (int i = 0; i < count; i++)
 	{
-		//Vertice n (string(i));
-		//(n);
+		int numv = rand() % count;
+		for (int j = 0; j < numv; j++)
+		{
+			int dest = rand() % count;
+
+			// ignora se o destino eh o mesmo nodo
+			if (dest == j)
+				continue;
+
+			char Result[16]; // string which will contain the number
+			sprintf ( Result, "%d", dest );
+			string s = string(Result);
+
+			Vertice v (s, 1);
+			nodos[i].addVizinho(v);
+		}
 	}
 
 }
