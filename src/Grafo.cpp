@@ -219,14 +219,15 @@ void Grafo::caminhomaiscurto(string n1, string n2) {
 	int iu = procura(n1);
 	string u = nodos[iu].getId();
 
-	cout << "nodo inicial: " << u << endl;
+	int ifinal = procura(n2)+1;
+	cout << "nodo inicial: " << u << ", nodo final: " << n2 << endl;
 
 	// N = {u}
 	N.push_back(u);
 	D.push_back(0);
 
 	// inicializacao
-	for (int i = iu+1; i < nnodos; i++)
+	for (int i = iu+1; i < ifinal; i++)
 	{
 		cout << "nodo[i]: " << nodos[i].getId() << " ";
 		D.push_back(nodos[iu].getCustoVizinho(nodos[i].getId()));
@@ -235,7 +236,7 @@ void Grafo::caminhomaiscurto(string n1, string n2) {
 	cout << endl;
 
 	string w;
-	int ind;
+	int ind = iu;
 	bool stop = false;
 
 	do
@@ -304,7 +305,7 @@ void Grafo::caminhomaiscurto(string n1, string n2) {
 		// verifica se todos os nodos estao em N
 		stop = true;
 //		for (int i = 0; i < nnodos; i++)
-		for (int j = iu; j < nnodos; j++)
+		for (int j = iu; j < ifinal; j++)
 		{
 			string id = nodos[j].getId();
 			if (find (N.begin(), N.end(), id ) == N.end())
@@ -320,7 +321,7 @@ void Grafo::caminhomaiscurto(string n1, string n2) {
 	cout << "\nTabela de custos: \n";
 
 	cout << "N: ";
-	for (int i = iu; i < nnodos; i++)
+	for (int i = iu; i < ifinal; i++)
 		cout << nodos[i].getId() << " ";
 	cout << "\n";
 
@@ -331,7 +332,7 @@ void Grafo::caminhomaiscurto(string n1, string n2) {
 
 }
 
-void *PrintHello(void *threadid)
+void *threadrun(void *threadid)
 {
    long tid;
    tid = (long)threadid;
@@ -363,7 +364,7 @@ void Grafo::criaRandom(int count) {
 		this->addNodo(n);
 
 		int rc = pthread_create(&threads[i], NULL,
-		                          PrintHello, (void *)i);
+				threadrun, (void *)i);
 	  if (rc)
 		 cout << "Error:unable to create thread," << rc << endl;
 
@@ -398,3 +399,5 @@ void Grafo::criaRandom(int count) {
 	}
 
 }
+
+

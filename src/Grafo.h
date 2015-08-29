@@ -35,6 +35,7 @@ public:
 	int procura(string id);
 	int procura(int x, int y);
 	void addNodo(Nodo n);
+	void delNodo(string id);
 
 	void criaRandom (int);
 
