@@ -21,6 +21,9 @@ public:
 	virtual ~ListaLinhas();
 	bool insere (Linha *l);
 	string mostraLista ();
+
+	Linha * procura (string l);
+
 };
 
 

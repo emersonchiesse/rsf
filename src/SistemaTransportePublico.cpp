@@ -20,3 +20,21 @@ std::string SistemaTransportePublico::listaLinhas() {
 	return linhas.mostraLista();
 
 }
+
+void SistemaTransportePublico::inserePontoLinha(
+		string linha, PontoLinha* p) {
+
+	Linha *l = linhas.procura(linha);
+
+	if (l != NULL)
+		l->inserePonto(p);
+
+}
+
+string SistemaTransportePublico::listaPontosLinha(string linha) {
+
+	Linha *l = linhas.procura(linha);
+
+	return l->listaPontos();
+
+}

@@ -22,8 +22,7 @@ bool ListaLinhas::insere(Linha* l) {
 	if (l == NULL)
 		return false;
 
-	linhas.incluaInfo(l);
-	return true;
+	return linhas.incluaInfo(l);
 }
 
 std::string string_format(const std::string fmt_str, ...) {
@@ -60,3 +59,27 @@ string ListaLinhas::mostraLista() {
 	}
 	return s;
 }
+
+Linha* ListaLinhas::procura(string l) {
+
+	Elemento<Linha>* pElAux = NULL;
+	Linha* linha = NULL;
+	pElAux = linhas.getpPrimeiro();
+	bool achou = false;
+	while (NULL != pElAux)
+	{
+		linha = pElAux->getInfo();
+		if (linha->getId()== l)
+		{
+			achou = true;
+			break;
+		}
+		pElAux = pElAux->getProximo();
+	}
+
+	if (achou)
+		return linha;
+
+	return NULL;
+}
+

@@ -14,6 +14,7 @@
 #include "CalculoDeRota.h"
 #include "SistemaRastreamentoPassageiro.h"
 
+using namespace std;
 
 class SistemaTransportePublico
 {
@@ -23,12 +24,17 @@ private:
 	Lista<CartaoUsuario> passageiros;
 	CalculoDeRota calculoRota;
 	SistemaRastreamentoPassageiro usuarios;
+
 public:
 	SistemaTransportePublico () {};
 	void Init ();
 
 	void insereLinha(Linha *l);
-	std::string listaLinhas();
+	string listaLinhas();
+
+	void inserePontoLinha (string linha, PontoLinha *p);
+	string listaPontosLinha (string linha);
+
 
 };
 #endif

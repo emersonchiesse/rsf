@@ -34,5 +34,8 @@ public:
 	std::string getCategoria();
 	std::string getCartao();
 
+	bool inserePonto(PontoLinha *p);
+	string listaPontos ();
+
 };
 #endif

@@ -9,7 +9,7 @@
 
 std::string Linha::getDescricao()
 {
-	return 0;
+	return descricao;
 }
 
 std::string Linha::getCategoria()
@@ -20,4 +20,17 @@ std::string Linha::getCategoria()
 std::string Linha::getCartao()
 {
 	return 0;
+}
+
+bool Linha::inserePonto(PontoLinha* p) {
+
+	if (p != NULL)
+		return pontos.incluaInfo(p);
+	else
+		return false;
+}
+
+string Linha::listaPontos() {
+
+
 }

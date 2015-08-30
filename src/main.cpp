@@ -42,6 +42,7 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 #include "Linha.h"
+#include "PontoLinha.h"
 #include "SistemaTransportePublico.h"
 
 
@@ -74,16 +75,21 @@ public:
     virtual bool OnInit();
 };
 
+
+
+class MyFrame;
+
+
 // Define a new frame type: this is going to be our main frame
 class MyFrame : public wxFrame
 {
 public:
-    // ctor(s)
     MyFrame(const wxString& title);
 
     // event handlers (these functions should _not_ be virtual)
     void OnOpen(wxCommandEvent& event);
     void OnLinhasAbreArquivo(wxCommandEvent& event);
+	void OnPontosAbreArquivo(wxCommandEvent& event);
     void OnLinhasMostraLista(wxCommandEvent& event);
     void OnRotasAbreArquivo(wxCommandEvent& event);
     void OnOnibusAbreArquivo(wxCommandEvent& event);
@@ -92,9 +98,13 @@ public:
     void OnPaint(wxPaintEvent& event);
     void OnMouse(wxMouseEvent& event);
 
+    float converteLat(int x);
+    float converteLon(int y);
+
 private:
     // any class wishing to process wxWidgets events must use this macro
     DECLARE_EVENT_TABLE()
+    wxBitmap image;
 
 	SistemaTransportePublico RIT;
 };
@@ -110,6 +120,7 @@ enum
     menu_FileOpen = wxID_OPEN,
     menuArquivoLinhas= wxID_FILE1,
 	menuArquivoRotas,
+	menuArquivoPontos,
 	menuArquivoVeiculos,
 	menuArquivoHorarios,
 	menuLinhasLista,
@@ -133,6 +144,7 @@ enum
 void MyFrame::OnPaint(wxPaintEvent& event) {
     wxPaintDC dc(this);
 
+    dc.DrawBitmap( image, 0, 0, false );
 
     //wxSize size = GetClientSize();
 
@@ -180,13 +192,77 @@ void MyFrame::OnLinhasMostraLista(wxCommandEvent& event) {
 	}
 }
 
+void MyFrame::OnPontosAbreArquivo(wxCommandEvent& event) {
+	wxFileDialog * openFileDialog = new wxFileDialog(this);
+	if (openFileDialog->ShowModal() == wxID_OK){
+
+		wxString fileName = openFileDialog->GetPath();
+
+		// extrai o nome da linha, do nome do arquivo
+		int ind = fileName.Find("-")+1;
+		string linha = fileName.SubString(ind, ind+2).ToStdString();
+
+		LinhasDialog dialog ( this, -1, _("Abre arquivo de pontos"),
+				string(fileName.ToAscii()),
+				wxPoint(100, 100), wxSize(400, 400) );
+		if ( dialog.ShowModal() != wxID_OK )
+			SetStatusText(_("The about box was cancelled.\n"));
+		else
+		{
+			Document d;
+			d.Parse(dialog.GetText().c_str());
+			assert(d.IsArray());
+			cout << d.Size() << endl;
+			for (SizeType i = 0; i < d.Size(); i++)
+			{
+				assert(d[i].IsObject());
+				assert(d[i].HasMember(JSON_PONTO_NOME));
+				assert(d[i][JSON_PONTO_NOME].IsString());
+				assert(d[i].HasMember(JSON_PONTO_LATITUDE));
+				assert(d[i][JSON_PONTO_LATITUDE].IsString());
+				assert(d[i].HasMember(JSON_PONTO_LONGITUDE));
+				assert(d[i][JSON_PONTO_LONGITUDE].IsString());
+				assert(d[i].HasMember(JSON_PONTO_TIPO));
+				assert(d[i][JSON_PONTO_TIPO].IsString());
+				assert(d[i].HasMember(JSON_PONTO_NUMERO));
+				assert(d[i][JSON_PONTO_NUMERO].IsString());
+				assert(d[i].HasMember(JSON_PONTO_SENTIDO));
+				assert(d[i][JSON_PONTO_SENTIDO].IsString());
+				assert(d[i].HasMember(JSON_PONTO_SEQUENCIA));
+				assert(d[i][JSON_PONTO_SEQUENCIA].IsString());
+
+				Coordenada c (d[i][JSON_PONTO_LATITUDE].GetString(),
+						d[i][JSON_PONTO_LONGITUDE].GetString());
+
+				PontoLinha *p = new PontoLinha (
+						d[i][JSON_PONTO_NOME].GetString(),
+						d[i][JSON_PONTO_NUMERO].GetString(),
+						d[i][JSON_PONTO_TIPO].GetString(),
+						d[i][JSON_PONTO_SENTIDO].GetString(),
+						0,
+						0,
+						c
+				);
+
+				cout << "ponto: " << d[i][JSON_PONTO_NOME].GetString() << endl;
+
+
+				RIT.inserePontoLinha (linha, p);
+			}
+		}
+
+	}
+}
+
 BEGIN_EVENT_TABLE(MyFrame, wxFrame)
 	EVT_MENU(menu_FileOpen,  MyFrame::OnOpen)
 	EVT_MENU(menuArquivoLinhas,  MyFrame::OnLinhasAbreArquivo)
+	EVT_MENU(menuArquivoPontos,  MyFrame::OnPontosAbreArquivo)
 	EVT_MENU(menuLinhasLista,  MyFrame::OnLinhasMostraLista)
     EVT_MENU(menuSair,  MyFrame::OnQuit)
     EVT_MENU(Minimal_About, MyFrame::OnAbout)
     EVT_MOUSE_EVENTS(MyFrame::OnMouse)
+	EVT_PAINT(MyFrame::OnPaint)
 END_EVENT_TABLE()
 
 // Create a new application object: this macro will allow wxWidgets to create
@@ -217,6 +293,7 @@ bool MyApp::OnInit()
 
     // and show it (the frames, unlike simple controls, are not shown when
     // created initially)
+    frame->SetSize(640, 640);
     frame->Show(true);
 
     // success: wxApp::OnRun() will be called which will enter the main message
@@ -224,6 +301,9 @@ bool MyApp::OnInit()
     // application would exit immediately.
     return true;
 }
+
+
+
 
 // ----------------------------------------------------------------------------
 // main frame
@@ -245,7 +325,8 @@ MyFrame::MyFrame(const wxString& title)
     wxMenu *menuLinhas = new wxMenu;
 
     fileMenu->Append(menuArquivoLinhas, _T("Carrega linhas..."), _T(""));
-    fileMenu->Append(menuArquivoRotas, _T("Carrega rotas..."), _T(""));
+	fileMenu->Append(menuArquivoPontos, _T("Carrega pontos..."), _T(""));
+	fileMenu->Append(menuArquivoRotas, _T("Carrega rotas..."), _T(""));
     fileMenu->Append(menuArquivoHorarios, _T("Carrega horarios..."), _T(""));
 
     fileMenu->Append(menuSair, _T("E&ncerra\tAlt-X"), _T("Encerra este programa"));
@@ -271,6 +352,8 @@ MyFrame::MyFrame(const wxString& title)
 
     //Board *board = new Board(this);
     //board->SetFocus();
+
+    image.LoadFile("/home/x/msc/urbs/staticmap.png", wxBITMAP_TYPE_PNG);
 
     RIT.Init();
 }
@@ -350,20 +433,63 @@ void MyFrame::OnLinhasAbreArquivo(wxCommandEvent& event) {
 	}
 }
 
+float MyFrame::converteLat(int x)
+{
+	float r=0;
+	float esq = -25.481558;
+	float dir = -25.357287;
+
+	if (x == 0)
+		return esq;
+	return (esq - x*(esq-dir)/640);
+}
+
+float MyFrame::converteLon(int y)
+{
+	float r=0;
+	float topo = -49.185682;
+	float baixo = -49.357169;
+
+	if (y == 0)
+		return topo;
+	return (topo - y*(topo-baixo)/640);
+}
+
 void MyFrame::OnMouse(wxMouseEvent& event) {
 
-	if (event.LeftUp())
+	int ind = -1;
 	{
-	/*	wxSize size = GetClientSize();
-	*	int x = event.GetX();
+		wxSize size = GetClientSize();
+		int x = event.GetX();
 		int y = event.GetY();
-		SetStatusText(wxString::Format(_T("x: %d, y: %d"), x, y));
-		int ind = grafo.procura(x/MULTIPLIER, (size.y - y)/MULTIPLIER);
-		if (ind >= 0)
-		{
-			std::vector<Nodo> nodos = grafo.getNodos();
-			SetStatusText(wxString::Format(_T("x: %d, y: %d, nodo: %s"),
-					x, y, nodos[ind].getId().c_str()));
-		}
-*/	}
+
+		// TODO transforma em lat long
+
+
+		SetStatusText(wxString::Format(_T("x: %f, y: %f"),
+				converteLat(x), converteLon(y)));
+//		ind = grafo.procura(x/MULTIPLIER, (size.y - y)/MULTIPLIER);
+//		if (ind >= 0)
+//		{
+//			std::vector<Nodo> nodos = grafo.getNodos();
+//			SetStatusText(wxString::Format(_T("x: %d, y: %d, nodo: %s"),
+//					x, y, nodos[ind].getId().c_str()));
+//
+//			if (event.LeftUp())
+//			{
+//				vector <string>::iterator i = nodosSelecionados.begin ();
+//				i = std::find(nodosSelecionados.begin(),
+//						nodosSelecionados.end(),
+//						nodos[ind].getId().c_str());
+//				if (i == nodosSelecionados.end() )
+//					nodosSelecionados.push_back(nodos[ind].getId().c_str());
+//				else
+//					nodosSelecionados.erase(i);
+//
+//				SetStatusText("select!");
+//				this->Refresh(true);
+//				this->Update();
+//			}
+//		}
+	}
 }
