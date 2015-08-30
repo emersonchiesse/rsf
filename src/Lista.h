@@ -2,6 +2,7 @@
 #define LISTA_H
 
 #include "Elemento.h"
+#include "stdlib.h"
 
 template<class TIPO>
 class Lista {
@@ -14,8 +15,9 @@ public:
 	~Lista ( );
 	void inicializa ( );
 	void limpar();
-	bool incluaElemento ( Elemento<TIPO>* pElemento );
+	bool insereElemento ( Elemento<TIPO>* pElemento );
 	bool incluaInfo (TIPO* pInfo );
+
 	Elemento<TIPO>* getpPrimeiro();
 	Elemento<TIPO>* getpAtual();
 };
@@ -67,5 +69,47 @@ void Lista<TIPO>::limpar ( )
 	pPrimeiro = 0;
 	pAtual = 0;
 }
+
+template<class TIPO>
+bool Lista<TIPO>::incluaInfo (TIPO *pInfo )
+{
+	if (NULL != pInfo)
+	{
+		Elemento<TIPO>* pElemento = NULL;
+		pElemento = new Elemento<TIPO>();
+		pElemento->setInfo (pInfo);
+		insereElemento (pElemento);
+		return true;
+	}
+	else
+		return false;
+}
+
+template<class TIPO>
+bool Lista<TIPO>::insereElemento (
+		Elemento<TIPO>* pElemento )
+		{
+	if (NULL != pElemento)
+	{
+		if (NULL == pPrimeiro)
+		{
+			pPrimeiro = pElemento;
+			pPrimeiro->setAnterior ( NULL );
+			pPrimeiro->setProximo ( NULL );
+			pAtual = pPrimeiro;
+		}
+		else
+		{
+			pElemento->setAnterior ( pAtual );
+			pElemento->setProximo ( NULL );
+			pAtual->setProximo ( pElemento );
+			pAtual = pAtual->getProximo ( );
+		}
+		return true;
+	}
+	else
+		return false;
+}
+
 #endif /* LISTA_H_ */
 

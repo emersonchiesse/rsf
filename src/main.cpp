@@ -35,6 +35,7 @@
 #include "defs.h"
 #include <wx/wx.h>
 #include "linhasDialog.h"
+#include "ListaDialog.h"
 #include <string>
 #include <fstream>
 #include "rapidjson/document.h"
@@ -83,6 +84,7 @@ public:
     // event handlers (these functions should _not_ be virtual)
     void OnOpen(wxCommandEvent& event);
     void OnLinhasAbreArquivo(wxCommandEvent& event);
+    void OnLinhasMostraLista(wxCommandEvent& event);
     void OnRotasAbreArquivo(wxCommandEvent& event);
     void OnOnibusAbreArquivo(wxCommandEvent& event);
     void OnQuit(wxCommandEvent& event);
@@ -110,6 +112,7 @@ enum
 	menuArquivoRotas,
 	menuArquivoVeiculos,
 	menuArquivoHorarios,
+	menuLinhasLista,
 
 	menuSair = wxID_EXIT,
 
@@ -130,7 +133,6 @@ enum
 void MyFrame::OnPaint(wxPaintEvent& event) {
     wxPaintDC dc(this);
 
-    std::cout << "app.onpaint\n";
 
     //wxSize size = GetClientSize();
 
@@ -166,9 +168,22 @@ inline void MyFrame::OnOnibusAbreArquivo(wxCommandEvent& event) {
 	}
 }
 
+void MyFrame::OnLinhasMostraLista(wxCommandEvent& event) {
+	string lista = RIT.listaLinhas();
+    ListaDialog dialog ( this, -1, _("Linhas"),
+    		lista,
+			wxPoint(100, 100), wxSize(400, 400) );
+	if ( dialog.ShowModal() != wxID_OK )
+		SetStatusText(_("The about box was cancelled.\n"));
+	else
+	{
+	}
+}
+
 BEGIN_EVENT_TABLE(MyFrame, wxFrame)
 	EVT_MENU(menu_FileOpen,  MyFrame::OnOpen)
 	EVT_MENU(menuArquivoLinhas,  MyFrame::OnLinhasAbreArquivo)
+	EVT_MENU(menuLinhasLista,  MyFrame::OnLinhasMostraLista)
     EVT_MENU(menuSair,  MyFrame::OnQuit)
     EVT_MENU(Minimal_About, MyFrame::OnAbout)
     EVT_MOUSE_EVENTS(MyFrame::OnMouse)
@@ -235,6 +250,8 @@ MyFrame::MyFrame(const wxString& title)
 
     fileMenu->Append(menuSair, _T("E&ncerra\tAlt-X"), _T("Encerra este programa"));
 
+    menuLinhas->Append(menuLinhasLista, _T("lista as linhas..."), _T(""));
+
 
     helpMenu->Append(Minimal_About, _T("&About...\tF1"), _T("Show about dialog"));
 
@@ -254,6 +271,8 @@ MyFrame::MyFrame(const wxString& title)
 
     //Board *board = new Board(this);
     //board->SetFocus();
+
+    RIT.Init();
 }
 
 
@@ -319,11 +338,12 @@ void MyFrame::OnLinhasAbreArquivo(wxCommandEvent& event) {
 				    	assert(d[i][JSON_LINHA_CODIGO].IsString());
 				    	assert(d[i].HasMember(JSON_LINHA_NOME));
 				    	assert(d[i][JSON_LINHA_NOME].IsString());
-				    	Linha l (d[i][JSON_LINHA_CODIGO].GetString(),
+				    	Linha *l = new Linha (d[i][JSON_LINHA_CODIGO].GetString(),
 				    			d[i][JSON_LINHA_NOME].GetString());
 
+				    		cout << "cod: " << d[i][JSON_LINHA_CODIGO].GetString() << endl;
 
-
+				    	RIT.insereLinha (l);
 				    }
 			}
 

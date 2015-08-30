@@ -9,19 +9,21 @@
 
 void Entidade::setId(string id)
 {
+	this->id = id;
 }
 
 string Entidade::getId()
 {
-	return 0;
+	return id;
 }
 
 void Entidade::setNome(std::string nome)
 {
+	this->nome = nome;
 }
 
-std::string Entidade::getNome()
+string Entidade::getNome()
 {
-	return 0;
+	return nome;
 }
 

@@ -8,16 +8,17 @@
 #include <assert.h>
 
 #include "Lista.h"
-#include "Linha.h"
+#include "ListaLinhas.h"
 #include "Empresa.h"
 #include "CartaoUsuario.h"
 #include "CalculoDeRota.h"
 #include "SistemaRastreamentoPassageiro.h"
 
+
 class SistemaTransportePublico
 {
 private:
-	Lista<Linha> linhas;
+	ListaLinhas linhas;
 	Lista<Empresa> empresas;
 	Lista<CartaoUsuario> passageiros;
 	CalculoDeRota calculoRota;
@@ -25,6 +26,9 @@ private:
 public:
 	SistemaTransportePublico () {};
 	void Init ();
+
+	void insereLinha(Linha *l);
+	std::string listaLinhas();
 
 };
 #endif

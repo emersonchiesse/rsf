@@ -19,9 +19,10 @@ BEGIN_EVENT_TABLE(LinhasDialog, wxDialog)
 END_EVENT_TABLE();
 
 
-LinhasDialog::LinhasDialog ( wxWindow * parent, wxWindowID id, const wxString & title,
+LinhasDialog::LinhasDialog ( wxWindow * parent, wxWindowID id,
+		const wxString & title,
 		const std::string arquivo,
-                           const wxPoint & position, const wxSize & size, long style )
+		const wxPoint & position, const wxSize & size, long style )
 : wxDialog( parent, id, title, position, size, style)
 {
 	wxString text = "", s;
