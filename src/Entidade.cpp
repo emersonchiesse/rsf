@@ -7,11 +7,11 @@
 #include "Entidade.h"
 
 
-void Entidade::setId(int id)
+void Entidade::setId(string id)
 {
 }
 
-int Entidade::getId()
+string Entidade::getId()
 {
 	return 0;
 }
@@ -24,3 +24,4 @@ std::string Entidade::getNome()
 {
 	return 0;
 }
+

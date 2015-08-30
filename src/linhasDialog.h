@@ -1,22 +1,18 @@
-/*
- * BasicDialog.h
- *
- *  Created on: 27 de ago de 2015
- *      Author: x
- */
 
-#ifndef BASICDIALOG_H_
-#define BASICDIALOG_H_
+
+#ifndef LINHASDIALOG_H_
+#define LINHASDIALOG_H_
 
 #include <wx/dialog.h>
 #include "wx/textctrl.h"
 #include <string>
 
-class BasicDialog: public wxDialog
+class LinhasDialog: public wxDialog
 {
 public:
 
-	BasicDialog ( wxWindow * parent, wxWindowID id, const wxString & title,
+	LinhasDialog ( wxWindow * parent, wxWindowID id, const wxString & title,
+			const std::string arquivo,
 	              const wxPoint & pos = wxDefaultPosition,
 	              const wxSize & size = wxDefaultSize,
 	              long style = wxDEFAULT_DIALOG_STYLE );
@@ -32,5 +28,5 @@ private:
 
 	DECLARE_EVENT_TABLE()
 };
-#endif /* BASICDIALOG_H_ */
+#endif /* LINHASDIALOG_H_ */
 

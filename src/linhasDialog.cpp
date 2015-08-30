@@ -5,19 +5,26 @@
  *      Author: x
  */
 
-#include "BasicDialog.h"
 #include "wx/button.h"
+#include "linhasDialog.h"
 
-BEGIN_EVENT_TABLE(BasicDialog, wxDialog)
+#include <string>
+#include <iostream>
+#include <fstream>
+
+using namespace std;
+
+BEGIN_EVENT_TABLE(LinhasDialog, wxDialog)
 //  EVT_SIZE (PlanWindow::OnSize)       // Example size handler
 END_EVENT_TABLE();
 
 
-BasicDialog::BasicDialog ( wxWindow * parent, wxWindowID id, const wxString & title,
+LinhasDialog::LinhasDialog ( wxWindow * parent, wxWindowID id, const wxString & title,
+		const std::string arquivo,
                            const wxPoint & position, const wxSize & size, long style )
 : wxDialog( parent, id, title, position, size, style)
 {
-	wxString dimensions = "", s;
+	wxString text = "", s;
 	wxPoint p;
 	wxSize  sz;
 
@@ -26,12 +33,26 @@ BasicDialog::BasicDialog ( wxWindow * parent, wxWindowID id, const wxString & ti
 
 	p.x = 6; p.y = 2;
 	//s.Printf(_(" x = %d y = %d\n"), p.x, p.y);
-	dimensions.append(s);
+//	dimensions.append(s);
 	//s.Printf(_(" width = %d height = %d\n"), sz.GetWidth(), sz.GetHeight());
-	dimensions.append(s);
-	dimensions.append("");
+//	dimensions.append(s);
+//	dimensions.append("");
 
-	dialogText = new wxTextCtrl ( this, -1, dimensions, p, sz, wxTE_MULTILINE );
+	std::string line;
+	  ifstream myfile (arquivo.c_str());
+	  if (myfile.is_open())
+	  {
+		while ( getline (myfile,line) )
+		{
+		  text.append(line);
+		}
+		myfile.close();
+	  }
+
+	  else text.append("não foi possível abrir o arquivo");
+
+
+	dialogText = new wxTextCtrl ( this, -1, text, p, sz, wxTE_MULTILINE );
 
 	p.y += sz.GetHeight() + 10;
 	wxButton * b = new wxButton( this, wxID_OK, _("OK"), p, wxDefaultSize );
@@ -39,15 +60,17 @@ BasicDialog::BasicDialog ( wxWindow * parent, wxWindowID id, const wxString & ti
 	wxButton * c = new wxButton( this, wxID_CANCEL, _("Cancel"), p, wxDefaultSize );
 
 	result = "";
-	Bind(wxEVT_COMMAND_BUTTON_CLICKED, &BasicDialog::OnOk,
+	Bind(wxEVT_COMMAND_BUTTON_CLICKED, &LinhasDialog::OnOk,
 	            this, b->GetId());
+
+
 }
 
-std::string BasicDialog::GetText() {
+std::string LinhasDialog::GetText() {
 	return result;
 }
 
-void BasicDialog::OnOk(wxCommandEvent& event) {
+void LinhasDialog::OnOk(wxCommandEvent& event) {
 	result = dialogText->GetValue().ToStdString();
 	EndModal(wxID_OK);
 	Destroy();

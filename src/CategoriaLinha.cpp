@@ -6,4 +6,11 @@
 
 #include "CategoriaLinha.h"
 
+//char* sCategoriasLinhas []= {
+//		CATEG_CONVENCIONAL,
+//		CATEG_ALIMENTADOR,
+//		CATEG_TRONCAL
+//} ;
 
+int CategoriaLinha::getCategoria(string allocator) {
+}

@@ -15,7 +15,7 @@
 class CalculoDeRota
 {
 private:
-	Lista<Rotas> listaRotas;
+//	Lista<Rotas> listaRotas;
 
 	float custoTotal;
 
@@ -23,6 +23,8 @@ private:
 
 
 public:
+	CalculoDeRota() {};
+	~CalculoDeRota() {};
 	void calculaRota(Coordenada inicio, Coordenada fim, int preferencias);
 
 };

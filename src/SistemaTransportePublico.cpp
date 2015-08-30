@@ -6,4 +6,6 @@
 
 #include "SistemaTransportePublico.h"
 
-
+void SistemaTransportePublico::Init() {
+//	linhas.
+}

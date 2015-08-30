@@ -7,22 +7,25 @@
 #include <iostream>
 #include <assert.h>
 
+using namespace std;
 class Entidade
 {
 private:
-	int id;
-
-	std::string nome;
+	string id;
+	string nome;
 
 
 public:
-	void setId(int id);
+	Entidade() {id = ""; nome = "";};
+	Entidade(string i, string n) {id = i; nome = n;};
 
-	int getId();
+	void setId(std::string id);
 
-	void setNome(std::string nome);
+	std::string getId();
 
-	std::string getNome();
+	void setNome(string nome);
+
+	string getNome();
 
 };
 #endif

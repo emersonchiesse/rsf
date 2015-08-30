@@ -32,8 +32,20 @@
 #endif
 
 #include "Lista.h"
+#include "defs.h"
 #include <wx/wx.h>
+#include "linhasDialog.h"
+#include <string>
+#include <fstream>
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
+#include "Linha.h"
+#include "SistemaTransportePublico.h"
 
+
+using namespace std;
+using namespace rapidjson;
 // ----------------------------------------------------------------------------
 // resources
 // ----------------------------------------------------------------------------
@@ -70,7 +82,9 @@ public:
 
     // event handlers (these functions should _not_ be virtual)
     void OnOpen(wxCommandEvent& event);
-    void OnDijkstra(wxCommandEvent& event);
+    void OnLinhasAbreArquivo(wxCommandEvent& event);
+    void OnRotasAbreArquivo(wxCommandEvent& event);
+    void OnOnibusAbreArquivo(wxCommandEvent& event);
     void OnQuit(wxCommandEvent& event);
     void OnAbout(wxCommandEvent& event);
     void OnPaint(wxPaintEvent& event);
@@ -79,6 +93,8 @@ public:
 private:
     // any class wishing to process wxWidgets events must use this macro
     DECLARE_EVENT_TABLE()
+
+	SistemaTransportePublico RIT;
 };
 
 // ----------------------------------------------------------------------------
@@ -89,9 +105,13 @@ private:
 enum
 {
     // menu items
-    Minimal_FileOpen = wxID_OPEN,
-    Minimal_FileDikstra = wxID_FILE1,
-    Minimal_Quit = wxID_EXIT,
+    menu_FileOpen = wxID_OPEN,
+    menuArquivoLinhas= wxID_FILE1,
+	menuArquivoRotas,
+	menuArquivoVeiculos,
+	menuArquivoHorarios,
+
+	menuSair = wxID_EXIT,
 
     // it is important for the id corresponding to the "About" command to have
     // this standard value as otherwise it won't be handled properly under Mac
@@ -112,15 +132,44 @@ void MyFrame::OnPaint(wxPaintEvent& event) {
 
     std::cout << "app.onpaint\n";
 
-    wxSize size = GetClientSize();
+    //wxSize size = GetClientSize();
 
 }
 
+inline void MyFrame::OnRotasAbreArquivo(wxCommandEvent& event) {
+	wxFileDialog * openFileDialog = new wxFileDialog(this);
+	if (openFileDialog->ShowModal() == wxID_OK){
+
+	    wxString fileName = openFileDialog->GetPath();
+
+	    LinhasDialog dialog ( this, -1, _("Digite numero de nós"),
+	    		string(fileName.ToAscii()),
+				wxPoint(100, 100), wxSize(200, 200) );
+		if ( dialog.ShowModal() != wxID_OK )
+			SetStatusText(_("The about box was cancelled.\n"));
+		else
+		{
+
+		}
+
+	}
+}
+
+inline void MyFrame::OnOnibusAbreArquivo(wxCommandEvent& event) {
+	wxFileDialog * openFileDialog = new wxFileDialog(this);
+	if (openFileDialog->ShowModal() == wxID_OK){
+
+	    wxString fileName = openFileDialog->GetPath();
+	    //grafo.load(string(fileName.ToAscii()));
+	    this->Refresh(true);
+	    this->Update();
+	}
+}
 
 BEGIN_EVENT_TABLE(MyFrame, wxFrame)
-	EVT_MENU(Minimal_FileOpen,  MyFrame::OnOpen)
-	EVT_MENU(Minimal_FileDikstra,  MyFrame::OnDijkstra)
-    EVT_MENU(Minimal_Quit,  MyFrame::OnQuit)
+	EVT_MENU(menu_FileOpen,  MyFrame::OnOpen)
+	EVT_MENU(menuArquivoLinhas,  MyFrame::OnLinhasAbreArquivo)
+    EVT_MENU(menuSair,  MyFrame::OnQuit)
     EVT_MENU(Minimal_About, MyFrame::OnAbout)
     EVT_MOUSE_EVENTS(MyFrame::OnMouse)
 END_EVENT_TABLE()
@@ -175,23 +224,25 @@ MyFrame::MyFrame(const wxString& title)
     //SetIcon(wxICON(sample));
 
 #if wxUSE_MENUS
-    // create a menu bar
+    // cria árvore de menus
     wxMenu *fileMenu = new wxMenu;
-
-    // the "About" item should be in the help menu
     wxMenu *helpMenu = new wxMenu;
+    wxMenu *menuLinhas = new wxMenu;
+
+    fileMenu->Append(menuArquivoLinhas, _T("Carrega linhas..."), _T(""));
+    fileMenu->Append(menuArquivoRotas, _T("Carrega rotas..."), _T(""));
+    fileMenu->Append(menuArquivoHorarios, _T("Carrega horarios..."), _T(""));
+
+    fileMenu->Append(menuSair, _T("E&ncerra\tAlt-X"), _T("Encerra este programa"));
+
+
     helpMenu->Append(Minimal_About, _T("&About...\tF1"), _T("Show about dialog"));
 
-    fileMenu->Append(Minimal_FileOpen, _T("&Open...\tF1"), _T("Open file"));
-    fileMenu->Append(Minimal_FileDikstra, _T("&Djisktra...\tF2"), _T("Calc Djistra"));
-    fileMenu->Append(Minimal_Quit, _T("E&xit\tAlt-X"), _T("Quit this program"));
-
-    // now append the freshly created menu to the menu bar...
     wxMenuBar *menuBar = new wxMenuBar();
-    menuBar->Append(fileMenu, _T("&File"));
-    menuBar->Append(helpMenu, _T("&Help"));
+    menuBar->Append(fileMenu, _T("&Arquivo"));
+    menuBar->Append(menuLinhas, _T("&Linhas"));
+    menuBar->Append(helpMenu, _T("&Ajuda"));
 
-    // ... and attach this menu bar to the frame
     SetMenuBar(menuBar);
 #endif // wxUSE_MENUS
 
@@ -244,8 +295,39 @@ void MyFrame::OnAbout(wxCommandEvent& WXUNUSED(event))
                  this);
 }
 
-void MyFrame::OnDijkstra(wxCommandEvent& event) {
+void MyFrame::OnLinhasAbreArquivo(wxCommandEvent& event) {
+	wxFileDialog * openFileDialog = new wxFileDialog(this);
+	if (openFileDialog->ShowModal() == wxID_OK){
 
+	    wxString fileName = openFileDialog->GetPath();
+
+		    LinhasDialog dialog ( this, -1, _("Digite numero de nós"),
+		    		string(fileName.ToAscii()),
+					wxPoint(100, 100), wxSize(400, 400) );
+			if ( dialog.ShowModal() != wxID_OK )
+				SetStatusText(_("The about box was cancelled.\n"));
+			else
+			{
+				    Document d;
+				    d.Parse(dialog.GetText().c_str());
+				    assert(d.IsArray());
+				    cout << d.Size() << endl;
+				    for (SizeType i = 0; i < d.Size(); i++)
+				    {
+				    	assert(d[i].IsObject());
+				    	assert(d[i].HasMember(JSON_LINHA_CODIGO));
+				    	assert(d[i][JSON_LINHA_CODIGO].IsString());
+				    	assert(d[i].HasMember(JSON_LINHA_NOME));
+				    	assert(d[i][JSON_LINHA_NOME].IsString());
+				    	Linha l (d[i][JSON_LINHA_CODIGO].GetString(),
+				    			d[i][JSON_LINHA_NOME].GetString());
+
+
+
+				    }
+			}
+
+	}
 }
 
 void MyFrame::OnMouse(wxMouseEvent& event) {

@@ -18,14 +18,13 @@ class SistemaTransportePublico
 {
 private:
 	Lista<Linha> linhas;
-
 	Lista<Empresa> empresas;
-
 	Lista<CartaoUsuario> passageiros;
-
 	CalculoDeRota calculoRota;
-
 	SistemaRastreamentoPassageiro usuarios;
+public:
+	SistemaTransportePublico () {};
+	void Init ();
 
 };
 #endif

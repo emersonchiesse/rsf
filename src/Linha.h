@@ -16,19 +16,22 @@ class Linha : public Entidade
 {
 private:
 	std::string descricao;
-
 	CategoriaLinha categoria;
-
 	bool somente_cartao;
-
 	Lista<PontoLinha> pontos;
 
-
 public:
+	Linha (string id,
+			string nome,
+			bool cartao = false
+	):Entidade(id,nome)
+	{
+		somente_cartao = cartao;
+//		categoria = l;
+	};
+
 	std::string getDescricao();
-
 	std::string getCategoria();
-
 	std::string getCartao();
 
 };
