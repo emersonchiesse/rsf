@@ -6,4 +6,6 @@
 
 #include "PontoLinha.h"
 
-
+Coordenada* PontoLinha::getCoordenada() {
+	return &coordenada;
+}

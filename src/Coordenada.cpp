@@ -11,3 +11,11 @@ int Coordenada::getAltitude()
 {
 	return 0;
 }
+
+double Coordenada::getLatitude() {
+	return latitude;
+}
+
+double Coordenada::getLongitude() {
+	return longitude;
+}

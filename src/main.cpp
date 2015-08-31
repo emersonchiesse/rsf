@@ -42,6 +42,7 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 #include "Linha.h"
+#include "Coordenada.h"
 #include "PontoLinha.h"
 #include "SistemaTransportePublico.h"
 
@@ -98,13 +99,22 @@ public:
     void OnPaint(wxPaintEvent& event);
     void OnMouse(wxMouseEvent& event);
 
-    float converteLat(int x);
-    float converteLon(int y);
+    double converteLat(int x);
+    double converteLon(int y);
+    int converteX(double lat);
+    int converteY(double lon);
+
 
 private:
     // any class wishing to process wxWidgets events must use this macro
     DECLARE_EVENT_TABLE()
     wxBitmap image;
+    int raioPonto;
+
+    float margemEsquerda = -25.481558;
+    float margemDireita = -25.357287;
+    float margemSuperior;
+    float margemInferior;
 
 	SistemaTransportePublico RIT;
 };
@@ -144,9 +154,64 @@ enum
 void MyFrame::OnPaint(wxPaintEvent& event) {
     wxPaintDC dc(this);
 
+    // desenha mapa
     dc.DrawBitmap( image, 0, 0, false );
 
+    // plota pontos
+    // para todas as linhas (selecionadas)
+    //Lista<Linha> *linhas = RIT.getLinhas();
+    ListaLinhas *linhas = RIT.getLinhas();
+    if (linhas == NULL)
+    	return;
+
+//    for (Lista<Linha>::iterator l= linhas->begin();
+//    		l != linhas->end(); l++)
+    {
+
+			//RIT.getPontos(linha)
+		Linha *linha = linhas->procura("303");
+		if (linha == NULL)
+			return;
+
+		List<PontoLinha> *pontos = linha->getPontos();
+		if (pontos == NULL)
+			return;
+
+		for (List<PontoLinha>::iterator i = pontos->begin();
+				i != pontos->end(); i++)
+		{
+			PontoLinha p = (PontoLinha)(*i);
+			Coordenada *c = p.getCoordenada();
+			dc.DrawCircle(converteX(c->getLongitude()),
+					converteY(c->getLatitude()), raioPonto);
+		}
+    }
+//    while (p != NULL;)
+
+    // desenha pontos
+
+
+
+    // desenha rotas
+
     //wxSize size = GetClientSize();
+    // escolhe cor, se estiver selecionado
+	if (true)
+	{
+		dc.SetBrush(*wxGREEN_BRUSH); // green filling
+		dc.SetPen( wxPen( wxColor(255,0,0), 1 ) ); // 5-pixels-thick red outline
+	}
+//	else
+//	{
+//		dc.SetBrush(*wxBLACK_BRUSH);
+//		dc.SetPen( wxPen( wxColor(255,0,0), 1 ) );
+//	}
+
+	// desenha nodos
+	dc.DrawCircle(100, 100, raioPonto);
+//	dc.DrawText(wxString::FromUTF8(id.c_str()),
+//			x*MULTIPLIER+5, size.y-y*MULTIPLIER+5);
+
 
 }
 
@@ -231,10 +296,14 @@ void MyFrame::OnPontosAbreArquivo(wxCommandEvent& event) {
 				assert(d[i].HasMember(JSON_PONTO_SEQUENCIA));
 				assert(d[i][JSON_PONTO_SEQUENCIA].IsString());
 
-				Coordenada c (d[i][JSON_PONTO_LATITUDE].GetString(),
-						d[i][JSON_PONTO_LONGITUDE].GetString());
+				string lat = d[i][JSON_PONTO_LATITUDE].GetString();
+				lat[3]='.';
+				string lon = d[i][JSON_PONTO_LONGITUDE].GetString();
+				lon[3]='.';
 
-				PontoLinha *p = new PontoLinha (
+				Coordenada c (lat, lon);
+
+				PontoLinha *p = new PontoLinha(
 						d[i][JSON_PONTO_NOME].GetString(),
 						d[i][JSON_PONTO_NUMERO].GetString(),
 						d[i][JSON_PONTO_TIPO].GetString(),
@@ -244,11 +313,17 @@ void MyFrame::OnPontosAbreArquivo(wxCommandEvent& event) {
 						c
 				);
 
-				cout << "ponto: " << d[i][JSON_PONTO_NOME].GetString() << endl;
+				cout << "ponto: " << d[i][JSON_PONTO_NOME].GetString()
+						<< " lat " << lat
+						<< " lon " << lon
+						<< endl;
 
 
 				RIT.inserePontoLinha (linha, p);
 			}
+
+			this->Refresh(true);
+			this->Update();
 		}
 
 	}
@@ -354,6 +429,15 @@ MyFrame::MyFrame(const wxString& title)
     //board->SetFocus();
 
     image.LoadFile("/home/x/msc/urbs/staticmap.png", wxBITMAP_TYPE_PNG);
+    raioPonto=2;
+//    margemEsquerda = -25.481558;
+//    margemDireita = -25.357287;
+//    margemSuperior = -49.185682;
+//    margemInferior = -49.357169;
+	margemEsquerda = -49.476909;
+	margemDireita = -49.097456;
+	margemSuperior = -25.238254;
+	margemInferior = -25.608483;
 
     RIT.Init();
 }
@@ -433,26 +517,28 @@ void MyFrame::OnLinhasAbreArquivo(wxCommandEvent& event) {
 	}
 }
 
-float MyFrame::converteLat(int x)
+double MyFrame::converteLat(int x)
 {
-	float r=0;
-	float esq = -25.481558;
-	float dir = -25.357287;
-
 	if (x == 0)
-		return esq;
-	return (esq - x*(esq-dir)/640);
+		return margemEsquerda;
+	return (margemEsquerda - x*(margemEsquerda-margemDireita)/640);
 }
 
-float MyFrame::converteLon(int y)
+double MyFrame::converteLon(int y)
 {
-	float r=0;
-	float topo = -49.185682;
-	float baixo = -49.357169;
-
 	if (y == 0)
-		return topo;
-	return (topo - y*(topo-baixo)/640);
+		return margemSuperior;
+	return (margemSuperior - y*(margemSuperior-margemInferior)/640);
+}
+
+int MyFrame::converteX(double lat)
+{
+	return (-(lat - margemEsquerda)*640)/(margemEsquerda-margemDireita);
+}
+
+int MyFrame::converteY(double lon)
+{
+	return (-(lon-margemSuperior)*640/(margemSuperior-margemInferior));
 }
 
 void MyFrame::OnMouse(wxMouseEvent& event) {
@@ -463,11 +549,9 @@ void MyFrame::OnMouse(wxMouseEvent& event) {
 		int x = event.GetX();
 		int y = event.GetY();
 
-		// TODO transforma em lat long
-
-
 		SetStatusText(wxString::Format(_T("x: %f, y: %f"),
 				converteLat(x), converteLon(y)));
+
 //		ind = grafo.procura(x/MULTIPLIER, (size.y - y)/MULTIPLIER);
 //		if (ind >= 0)
 //		{

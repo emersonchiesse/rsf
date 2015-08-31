@@ -10,6 +10,7 @@
 #include "Entidade.h"
 #include "CategoriaLinha.h"
 #include "Lista.h"
+#include "Lista2.h"
 #include "PontoLinha.h"
 
 class Linha : public Entidade
@@ -19,6 +20,7 @@ private:
 	CategoriaLinha categoria;
 	bool somente_cartao;
 	Lista<PontoLinha> pontos;
+	List<PontoLinha> pontos2;
 
 public:
 	Linha (string id,
@@ -36,6 +38,6 @@ public:
 
 	bool inserePonto(PontoLinha *p);
 	string listaPontos ();
-
+	List<PontoLinha>* getPontos();
 };
 #endif

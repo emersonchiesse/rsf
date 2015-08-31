@@ -7,10 +7,12 @@
 template<class TIPO>
 class Lista {
 private:
-
 	Elemento<TIPO>* pPrimeiro;
 	Elemento<TIPO>* pAtual;
 public:
+	//typedef Iterator<Elemento<TIPO> > iterator;
+	typedef TIPO 		  value_type;
+
 	Lista ( );
 	~Lista ( );
 	void inicializa ( );
@@ -20,7 +22,11 @@ public:
 
 	Elemento<TIPO>* getpPrimeiro();
 	Elemento<TIPO>* getpAtual();
+
+//	iterator begin(){ return iterator(pPrimeiro); }
+//	iterator end(){ return iterator(0); }
 };
+
 
 template<class TIPO>
 Lista<TIPO>::Lista ( )

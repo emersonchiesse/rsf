@@ -22,7 +22,7 @@ std::string SistemaTransportePublico::listaLinhas() {
 }
 
 void SistemaTransportePublico::inserePontoLinha(
-		string linha, PontoLinha* p) {
+		string linha, PontoLinha *p) {
 
 	Linha *l = linhas.procura(linha);
 
@@ -37,4 +37,8 @@ string SistemaTransportePublico::listaPontosLinha(string linha) {
 
 	return l->listaPontos();
 
+}
+
+ListaLinhas* SistemaTransportePublico::getLinhas() {
+	return &linhas;
 }

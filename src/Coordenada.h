@@ -12,21 +12,23 @@ using namespace std;
 class Coordenada
 {
 private:
-	float lat;
-	float longitude;
+	double latitude;
+	double longitude;
 	int altitude;
 
 
 public:
 	Coordenada() {};
-	Coordenada(string _lat, string _lon)
+	Coordenada(string lat, string lon)
 	{
-		lat = 0;
-		longitude = 0;
+		latitude = ::atof(lat.c_str());
+		longitude = ::atof(lon.c_str());;
 		altitude = 0;
 	}
 
 	int getAltitude();
+	double getLatitude();
+	double getLongitude();
 
 };
 #endif

@@ -19,6 +19,7 @@ using namespace std;
 class SistemaTransportePublico
 {
 private:
+	//Lista<Linha> linhas;
 	ListaLinhas linhas;
 	Lista<Empresa> empresas;
 	Lista<CartaoUsuario> passageiros;
@@ -35,6 +36,8 @@ public:
 	void inserePontoLinha (string linha, PontoLinha *p);
 	string listaPontosLinha (string linha);
 
+	ListaLinhas * getLinhas();
+	//Lista<Linha>* getLinhas();
 
 };
 #endif

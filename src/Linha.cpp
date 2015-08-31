@@ -22,15 +22,20 @@ std::string Linha::getCartao()
 	return 0;
 }
 
-bool Linha::inserePonto(PontoLinha* p) {
+bool Linha::inserePonto(PontoLinha *p) {
 
-	if (p != NULL)
-		return pontos.incluaInfo(p);
-	else
-		return false;
+		pontos2.push_back(*p);
+//	if (p != NULL)
+//		return pontos.incluaInfo(p);
+//	else
+//		return false;
 }
 
 string Linha::listaPontos() {
 
 
+}
+
+List<PontoLinha>* Linha::getPontos() {
+	return &pontos2;
 }
